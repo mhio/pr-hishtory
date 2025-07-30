@@ -20,6 +20,9 @@ import (
 //go:embed templates
 var templateFiles embed.FS
 
+//go:embed assets
+var assetFiles embed.FS
+
 type webUiData struct {
 	SearchQuery   string
 	SearchResults [][]string
@@ -140,6 +143,9 @@ func StartWebUiServer(ctx context.Context, port int, disableAuth bool, overriden
 	}
 	http.Handle("/", wba(http.HandlerFunc(webuiHandler)))
 	http.Handle("/htmx/results-table", wba(http.HandlerFunc(htmx_resultsTable)))
+	
+	fs := http.FileServer(http.FS(assetFiles))
+	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
 
 	server := http.Server{
 		BaseContext: func(l net.Listener) context.Context { return ctx },
